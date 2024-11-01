@@ -4,6 +4,15 @@ metadata:
   name: my-kafka-cluster
   namespace: kafka
 spec:
+  # Enable Kafka Exporter
+  kafkaExporter:
+    groupRegex: .* # You can filter the consumer grouops
+    topicRegex: .* # and topics to export with a regex
+    template:
+      pod:
+        metadata:
+          labels:
+            kafka-metrics: 'true'
   kafka:
     version: 3.8.0  # Updated Kafka version
     replicas: 3
@@ -19,7 +28,12 @@ spec:
       log.message.format.version: "3.8"  # Match with the updated version
     storage:
       type: ephemeral  # Keep this as ephemeral, no size needed
-    
+    metricsConfig:
+      type: jmxPrometheusExporter
+      valueFrom:
+        configMapKeyRef:
+          name: kafka-metrics
+          key: kafka-metrics-config.yml
   zookeeper:
     replicas: 3
     storage:

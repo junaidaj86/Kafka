@@ -127,6 +127,19 @@ To use the Kafka command-line tools from your local machine, you'll need to port
    /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:9092
    ```
 
+## Monitoring
+
+kubectl create namespace monitoring
+
+### install prometheus operator
+brew install helm
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm install my-prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
+
+
 ## Conclusion
 
 You have successfully set up a Kafka cluster on a Kind cluster using the Strimzi operator. You can now create topics, produce and consume messages as needed.

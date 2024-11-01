@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kafka-exporter-pod-monitor
+  namespace: monitoring  # Namespace where Kafka Exporter is running
+spec:
+  selector:
+    matchLabels:
+      strimzi.io/name: my-kafka-cluster-kafka-exporter  # Label to target the Kafka Exporter pod
+  namespaceSelector:
+    matchNames:
+      - kafka  # Replace with the correct namespace where Kafka Exporter is deployed
+  podMetricsEndpoints:
+    - port: "9404"  # Port where Kafka Exporter exposes Prometheus metrics (verify if correct)
+      path: /metrics
+      interval: 15s

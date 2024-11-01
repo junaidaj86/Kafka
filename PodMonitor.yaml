@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kafka-pod-monitor
+  namespace: monitoring  # Ensure this is the correct namespace where Kafka is running
+spec:
+  selector:
+    matchLabels:
+      strimzi.io/cluster: my-kafka-cluster  # Label used for Kafka brokers (Strimzi-managed)
+      strimzi.io/name: my-kafka-cluster-kafka  # Label to select Kafka broker pods
+  namespaceSelector:
+    matchNames:
+      - kafka  # Replace with the correct namespace where Kafka is deployed
+  podMetricsEndpoints:
+    - port: "9404"  # Ensure this is the port exposed by Kafka for Prometheus JMX metrics
+      path: /metrics
+      interval: 15s
