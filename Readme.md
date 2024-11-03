@@ -146,3 +146,87 @@ You have successfully set up a Kafka cluster on a Kind cluster using the Strimzi
 
 For further customization and details, refer to the [Strimzi Documentation](https://strimzi.io/docs/).
 
+
+
+## Metallb for load balancer in local env https://www.youtube.com/watch?v=43fn499NYXs
+
+#### steps
+Here is a step-by-step guide in Markdown format:
+
+```markdown
+# Step-by-Step Guide for Setting up MetalLB with Helm and Configuring IP Address Pool and L2 Advertisement
+
+This guide covers the setup of MetalLB on a Kubernetes cluster, using Helm for installation, followed by IP pool configuration for load balancing with Layer 2 advertisement.
+
+---
+
+## Step 1: Add the MetalLB Helm Repository
+
+First, add the official MetalLB Helm repository to your local Helm configuration.
+
+```bash
+helm repo add metallb https://metallb.github.io/metallb
+```
+
+## Step 2: Install MetalLB Using Helm
+
+Now that the MetalLB repository is added, install MetalLB in your Kubernetes cluster.
+
+```bash
+helm install metallb metallb/metallb
+```
+
+This command installs MetalLB in the default namespace (`metallb-system`), creating all required resources.
+
+## Step 3: Verify the Docker Network for Kind
+
+If you're running Kubernetes in a Kind (Kubernetes in Docker) cluster, inspect the Docker network to ensure you’re using the correct IP range. 
+
+```bash
+docker network inspect kind
+```
+
+Note down the IP address range used in this network for use in the IP pool configuration.
+
+## Step 4: Configure an IP Address Pool for MetalLB
+
+Apply an `IPAddressPool` resource to define a range of IP addresses for MetalLB. Replace the IP range below with a suitable range from your network.
+
+```bash
+kubectl apply -f - << EOF
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool  
+metadata:
+  name: demo-pool
+  namespace: default
+spec:
+  addresses:     
+  - 172.19.0.10-172.19.0.30
+EOF
+```
+
+This command creates an IP pool named `demo-pool` in the `default` namespace, with addresses in the specified range.
+
+## Step 5: Configure L2 Advertisement for MetalLB
+
+Next, apply an `L2Advertisement` resource to enable Layer 2 mode for load balancing, associating it with the previously created IP address pool.
+
+```bash
+kubectl apply -f - << EOF
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: demo
+  namespace: default
+spec:
+  ipAddressPools:
+  - demo-pool
+EOF
+```
+
+This step configures MetalLB to advertise IPs in `demo-pool` using Layer 2 mode, enabling the load balancer to respond to ARP requests on the local network.
+
+---
+
+Your MetalLB configuration should now be complete, allowing Kubernetes services of type `LoadBalancer` to allocate IPs from `demo-pool`.
+```

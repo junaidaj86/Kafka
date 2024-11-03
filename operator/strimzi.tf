@@ -22,8 +22,6 @@ provider "helm" {
   }
 }
 
-
-
 # Kafka Cluster Deployment - 3 Kafka and 3 Zookeeper replicas
 resource "kubernetes_manifest" "strimzi_kafka" {
   manifest = {
@@ -42,6 +40,12 @@ resource "kubernetes_manifest" "strimzi_kafka" {
             port = 9092
             type = "internal"
             tls  = false
+          },
+          {
+            name     = "external"
+            port     = 9094
+            type     = "loadbalancer"
+            tls      = false
           }
         ]
         config = {
