@@ -40,13 +40,14 @@ resource "kubernetes_manifest" "strimzi_kafka" {
             port = 9092
             type = "internal"
             tls  = false
-          },
-          {
-            name     = "external"
-            port     = 9094
-            type     = "loadbalancer"
-            tls      = false
           }
+          # ,
+          # {
+          #   name     = "external"
+          #   port     = 9094
+          #   type     = "loadbalancer"
+          #   tls      = false
+          # }
         ]
         config = {
           "offsets.topic.replication.factor" = 3

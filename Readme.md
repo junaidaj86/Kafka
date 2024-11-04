@@ -49,7 +49,7 @@ kubectl config use-context kind-kafka
 
 1. **Create a Namespace for Kafka**:
    ```bash
-   kubectl create namespace kafka
+   kubectl create namespace strimzi
    ```
 
 2. **Deploy the Strimzi Operator**:
