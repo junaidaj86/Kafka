@@ -1,0 +1,59 @@
+resource "kubernetes_manifest" "kafka_istio_gateway" {
+  manifest = {
+    apiVersion = "networking.istio.io/v1alpha3"
+    kind       = "Gateway"
+    metadata = {
+      name      = "kafka-gateway"
+      namespace = "strimzi"
+    }
+    spec = {
+      selector = {
+        istio = "ingressgateway"  # Reference Istio Ingress Gateway
+      }
+      servers = [
+        {
+          port = {
+            number   = 9092
+            name     = "kafka"
+            protocol = "TCP"
+          }
+          hosts = ["*"]
+        }
+      ]
+    }
+  }
+}
+
+resource "kubernetes_manifest" "kafka_istio_virtualservice" {
+  manifest = {
+    apiVersion = "networking.istio.io/v1alpha3"
+    kind       = "VirtualService"
+    metadata = {
+      name      = "kafka-virtualservice"
+      namespace = "strimzi"
+    }
+    spec = {
+      gateways = ["kafka-gateway"]
+      hosts    = ["*"]
+      tcp = [
+        {
+          match = [
+            {
+              port = 9092
+            }
+          ]
+          route = [
+            {
+              destination = {
+                host = "my-kafka-cluster-kafka-bootstrap-headless.strimzi.svc.cluster.local"
+                port = {
+                  number = 9092
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

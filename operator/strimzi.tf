@@ -41,7 +41,7 @@ resource "kubernetes_manifest" "strimzi_kafka" {
             type = "internal"
             tls  = false
           }
-          # ,
+          ,
           # {
           #   name     = "external"
           #   port     = 9094

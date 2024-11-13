@@ -5,11 +5,11 @@ kubectl apply -f - << EOF
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: demp-pool
+  name: demo-pool
   namespace: default
 spec:
   addresses:
-  - 172.19.0.10-172.19.0.40
+  - 192.168.97.100-192.168.97.140
 EOF
 
 
@@ -24,3 +24,4 @@ spec:
   ipAddressPools:
   - demo-pool
 EOF
+

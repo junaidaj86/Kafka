@@ -1,0 +1,25 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: postgres-source-connector
+  namespace: strimzi
+  labels:
+    strimzi.io/cluster: my-connect-cluster
+  
+spec:
+  class: io.confluent.connect.jdbc.JdbcSourceConnector
+  tasksMax: 1
+  config:
+    connector.class: io.confluent.connect.jdbc.JdbcSourceConnector
+    tasks.max: "1"
+    topic.prefix: "postgres-"  # Kafka topic prefix for data coming from the PostgreSQL tables
+    connection.url: "jdbc:postgresql://postgres:5432/exampledb"  # The service name and port for your PostgreSQL
+    connection.user: "postgres"  # Username for PostgreSQL
+    connection.password: "examplepassword"  # Password for PostgreSQL
+    table.whitelist: "users"  # Replace with the name of the table you want to read from
+    mode: "bulk"  # Use 'bulk' for full table scan, or 'incrementing'/'timestamp' for incremental loading
+    poll.interval.ms: "5000"  # Interval for polling new data
+    timestamp.column.name: "last_modified"  # If using 'timestamp' mode, this is the column to track changes
+    numeric.mapping: "best_fit"  # Numeric column handling
+    value.converter: org.apache.kafka.connect.json.JsonConverter  # Kafka converter for JSON output
+    value.converter.schemas.enable: "false"  # Disable schema for simplicity
