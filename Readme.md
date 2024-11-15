@@ -1,6 +1,3 @@
-Here's a comprehensive `README.md` file for your setup:
-
-```markdown
 # Kafka Cluster Deployment using Strimzi Operator with MetalLB and Custom Kafka Connect Image
 
 This guide will help you set up a Kafka cluster on a Kubernetes environment using the Strimzi Kafka Operator, configured with MetalLB for load balancing. Additionally, we will build a custom Kafka Connect image that includes the Confluent JDBC connector.
@@ -276,4 +273,3 @@ kubectl apply -f kafka-connector.yaml
 You have successfully set up a Kafka cluster using Strimzi Operator, integrated with MetalLB for load balancing, and deployed a custom Kafka Connect image. You also created a Kafka Connector for sourcing data from PostgreSQL.
 ```
 
-Copy this content into a `README.md` file and follow the steps for seamless deployment and setup.
