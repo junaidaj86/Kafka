@@ -1,0 +1,25 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: postgres-source-connector-0
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-connect # this is connect cluster name not kafka cluster name
+spec:
+  class: io.confluent.connect.jdbc.JdbcSourceConnector
+  tasksMax: 3
+  config:
+    connector.class: io.confluent.connect.jdbc.JdbcSourceConnector
+    tasks.max: "3"
+    topics: "users"
+    connection.url: "jdbc:postgresql://postgres:5432/exampledb"
+    connection.user: "postgres"
+    connection.password: "examplepassword"
+    table.whitelist: "users"
+    mode: "incrementing"
+    incrementing.column.name: "id"
+    poll.interval.ms: "5000"
+    timestamp.column.name: "last_modified"
+    numeric.mapping: "best_fit"
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter.schemas.enable: "false"

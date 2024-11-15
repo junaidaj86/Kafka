@@ -230,3 +230,5 @@ This step configures MetalLB to advertise IPs in `demo-pool` using Layer 2 mode,
 
 Your MetalLB configuration should now be complete, allowing Kubernetes services of type `LoadBalancer` to allocate IPs from `demo-pool`.
 ```
+
+
