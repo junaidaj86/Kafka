@@ -9,7 +9,7 @@ spec:
   bootstrapServers: my-kafka-cluster-kafka-bootstrap:9092
   version: 3.7.0
   replicas: 1
-  image: junaidajdocker/my-custom-kafka-connect1
+  image: junaidajdocker/junaid-confluentinc-kafka-connect-jdbc-10.8.0:latest
   config:
     group.id: my-connect-cluster
     offset.storage.topic: my-connect-cluster-offsets

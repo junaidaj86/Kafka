@@ -1,222 +1,61 @@
-# Setting Up a Kafka Cluster on Kind
+Here's a comprehensive `README.md` file for your setup:
 
-This document provides step-by-step instructions for installing a Kafka cluster on a Kind (Kubernetes IN Docker) cluster using the Strimzi operator.
+```markdown
+# Kafka Cluster Deployment using Strimzi Operator with MetalLB and Custom Kafka Connect Image
+
+This guide will help you set up a Kafka cluster on a Kubernetes environment using the Strimzi Kafka Operator, configured with MetalLB for load balancing. Additionally, we will build a custom Kafka Connect image that includes the Confluent JDBC connector.
 
 ## Prerequisites
 
-1. **Docker**: Make sure Docker is installed and running on your machine.
-2. **Kind**: Install Kind using Homebrew:
-   ```bash
-   brew install kind
-   ```
+Ensure the following tools are installed on your system:
+- [Docker](https://docs.docker.com/get-docker/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- [Helm](https://helm.sh/docs/intro/install/)
+- [Kind](https://kind.sigs.k8s.io/)
 
-## Create a Kind Cluster
+## Step 1: Create a Kind Cluster
 
-1. **Create a Kind Configuration File**:
-   Create a file named `kind-config.yaml` with your desired configuration.
+Create a Kubernetes cluster using Kind with one control plane and one worker node.
 
-2. **Create the Kind Cluster**:
-   Run the following command to create a Kind cluster named `kafka`:
-   ```bash
-   kind create cluster --name kafka --config kind-config.yaml
-   ```
-
-## Kubernetes Context Management
-
-### Check Current Context
-To see the current Kubernetes context:
-```bash
-kubectl config current-context
+```yaml
+# kind-cluster-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+  - role: worker
 ```
 
-### Get All Contexts
-To list all available contexts:
+Run the command to create the cluster:
+
 ```bash
-kubectl config get-contexts
+kind create cluster --config kind-cluster-config.yaml
 ```
 
-### Switch Context
-To switch to a specific context (e.g., `kind-kafka`):
-```bash
-kubectl config use-context <context-name>
-```
-Example:
-```bash
-kubectl config use-context kind-kafka
-```
+## Step 2: Install MetalLB
 
-## Deploying Kafka on the Kubernetes Cluster
-
-1. **Create a Namespace for Kafka**:
-   ```bash
-   kubectl create namespace strimzi
-   ```
-
-2. **Deploy the Strimzi Operator**:
-   Use the following command to deploy the Strimzi operator:
-   ```bash
-   kubectl apply -f "https://strimzi.io/install/latest?namespace=kafka" -n kafka
-   ```
-
-3. **Check if the Strimzi Operator is Ready**:
-   Verify the deployment of the Strimzi operator:
-   ```bash
-   kubectl get pods -n kafka
-   ```
-
-## Install Kafka
-
-1. **Deploy the Kafka Cluster**:
-   Create a Kafka cluster using a configuration file (e.g., `kafka-cluster.yaml`):
-   ```bash
-   kubectl apply -f kafka-cluster.yaml -n kafka
-   ```
-
-2. **Check Kafka Deployment**:
-   Verify that all Kafka pods are running successfully:
-   ```bash
-   kubectl get pods -n kafka
-   ```
-
-## Connect to Kafka
-
-To use the Kafka command-line tools from your local machine, you'll need to port-forward the Kafka bootstrap service:
-
-1. **Port Forwarding**:
-   Run the following command in a new terminal window (do not close this terminal to maintain the connection):
-   ```bash
-   kubectl port-forward service/my-kafka-cluster-kafka-bootstrap 9092:9092 -n kafka
-   ```
-
-## Sanity Test: Create and List Topics
-
-### Create a Topic
-1. **Apply Topic Configuration**:
-   Use a configuration file (e.g., `topic.yaml`) to create a topic:
-   ```bash
-   kubectl apply -f topic.yaml -n kafka
-   ```
-
-### Verify Kafka Brokers
-1. **Get Kafka Broker Pods**:
-   Find the broker pods:
-   ```bash
-   kubectl get pods -n kafka
-   ```
-
-2. **Log into a Broker Pod**:
-   Access the first Kafka broker pod:
-   ```bash
-   kubectl exec -it my-kafka-cluster-kafka-0 -n kafka -- /bin/bash
-   ```
-
-3. **Locate Kafka Scripts**:
-   Find the Kafka scripts in the container:
-   ```bash
-   find / -name kafka-topics.sh 2>/dev/null
-   ```
-
-   Example output:
-   ```
-   /opt/kafka/bin/kafka-topics.sh
-   ```
-
-4. **List Topics**:
-   Use the found path to list the topics:
-   ```bash
-   /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:9092
-   ```
-
-## Monitoring
-
-kubectl create namespace monitoring
-
-### install prometheus operator
-brew install helm
-
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-
-helm install my-prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
-
-
-## Conclusion
-
-You have successfully set up a Kafka cluster on a Kind cluster using the Strimzi operator. You can now create topics, produce and consume messages as needed.
-
-For further customization and details, refer to the [Strimzi Documentation](https://strimzi.io/docs/).
-
-
-
-## Metallb for load balancer in local env https://www.youtube.com/watch?v=43fn499NYXs
-
-#### steps
-Here is a step-by-step guide in Markdown format:
-
-```markdown
-# Step-by-Step Guide for Setting up MetalLB with Helm and Configuring IP Address Pool and L2 Advertisement
-
-This guide covers the setup of MetalLB on a Kubernetes cluster, using Helm for installation, followed by IP pool configuration for load balancing with Layer 2 advertisement.
-
----
-
-## Step 1: Add the MetalLB Helm Repository
-
-First, add the official MetalLB Helm repository to your local Helm configuration.
+Install MetalLB for load balancing in your Kubernetes cluster:
 
 ```bash
 helm repo add metallb https://metallb.github.io/metallb
-```
-
-## Step 2: Install MetalLB Using Helm
-
-Now that the MetalLB repository is added, install MetalLB in your Kubernetes cluster.
-
-```bash
 helm install metallb metallb/metallb
-```
 
-This command installs MetalLB in the default namespace (`metallb-system`), creating all required resources.
-
-## Step 3: Verify the Docker Network for Kind
-
-If you're running Kubernetes in a Kind (Kubernetes in Docker) cluster, inspect the Docker network to ensure you’re using the correct IP range. 
-
-```bash
-docker network inspect kind
-```
-
-Note down the IP address range used in this network for use in the IP pool configuration.
-
-## Step 4: Configure an IP Address Pool for MetalLB
-
-Apply an `IPAddressPool` resource to define a range of IP addresses for MetalLB. Replace the IP range below with a suitable range from your network.
-
-```bash
 kubectl apply -f - << EOF
 apiVersion: metallb.io/v1beta1
-kind: IPAddressPool  
+kind: IPAddressPool
 metadata:
   name: demo-pool
   namespace: default
 spec:
-  addresses:     
-  - 172.19.0.10-172.19.0.30
+  addresses:
+  - 172.18.0.100-172.18.0.140
 EOF
-```
 
-This command creates an IP pool named `demo-pool` in the `default` namespace, with addresses in the specified range.
-
-## Step 5: Configure L2 Advertisement for MetalLB
-
-Next, apply an `L2Advertisement` resource to enable Layer 2 mode for load balancing, associating it with the previously created IP address pool.
-
-```bash
 kubectl apply -f - << EOF
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
-  name: demo
+  name: example
   namespace: default
 spec:
   ipAddressPools:
@@ -224,11 +63,217 @@ spec:
 EOF
 ```
 
-This step configures MetalLB to advertise IPs in `demo-pool` using Layer 2 mode, enabling the load balancer to respond to ARP requests on the local network.
+## Step 3: Install Strimzi Kafka Operator
 
----
+Create a script `install-strimzi.sh` for automating the Strimzi installation:
 
-Your MetalLB configuration should now be complete, allowing Kubernetes services of type `LoadBalancer` to allocate IPs from `demo-pool`.
+```bash
+#!/bin/bash
+
+# Variables
+NAMESPACE="strimzi"
+HELM_REPO_NAME="strimzi"
+HELM_REPO_URL="https://strimzi.io/charts/"
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Check for required commands
+if ! command_exists kubectl; then
+    echo "kubectl is not installed. Please install it first."
+    exit 1
+fi
+
+if ! command_exists helm; then
+    echo "Helm is not installed. Please install it first."
+    exit 1
+fi
+
+# Create the Strimzi namespace if it doesn't exist
+kubectl get namespace "$NAMESPACE" >/dev/null 2>&1 || {
+    echo "Creating namespace '$NAMESPACE'..."
+    kubectl create namespace "$NAMESPACE"
+}
+
+# Add the Strimzi Helm repository
+echo "Adding Strimzi Helm repository..."
+helm repo add "$HELM_REPO_NAME" "$HELM_REPO_URL"
+
+# Update Helm repositories
+echo "Updating Helm repositories..."
+helm repo update
+
+# Install the Strimzi Kafka Operator
+echo "Installing Strimzi Kafka Operator..."
+helm install strimzi-kafka-operator "$HELM_REPO_NAME"/strimzi-kafka-operator --namespace "$NAMESPACE"
+
+# Wait for the operator to be ready
+echo "Waiting for Strimzi Kafka Operator to be ready..."
+kubectl wait --for=condition=available --timeout=600s deployment/strimzi-cluster-operator -n "$NAMESPACE"
+
+# Verify the installation
+echo "Strimzi Kafka Operator installation completed. Verifying installation..."
+kubectl get pods -n "$NAMESPACE"
+
+echo "Installation complete!"
 ```
 
+Run the script:
 
+```bash
+chmod +x install-strimzi.sh
+./install-strimzi.sh
+```
+
+## Step 4: Deploy Kafka Cluster
+
+Create a `kafka-cluster.yaml` file with the configuration:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: my-kafka-cluster
+  namespace: kafka
+spec:
+  kafka:
+    replicas: 3
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      - name: external
+        port: 9094
+        type: loadbalancer
+        tls: false
+    config:
+      "offsets.topic.replication.factor": 3
+      "transaction.state.log.replication.factor": 3
+      "transaction.state.log.min.isr": 2
+      "log.message.format.version": "2.8"
+    storage:
+      type: ephemeral
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
+```
+
+Apply the configuration:
+
+```bash
+kubectl apply -f kafka-cluster.yaml
+```
+
+## Step 5: Build and Push Custom Kafka Connect Image
+
+Create a `Dockerfile` for Kafka Connect:
+
+```Dockerfile
+FROM quay.io/strimzi/kafka:0.43.0-kafka-3.7.0
+USER root
+# Add additional plugins or configurations here
+ADD confluentinc-kafka-connect-jdbc-10.8.0 /opt/kafka/plugins/confluentinc-kafka-connect-jdbc-10.8.0
+USER 1001
+```
+
+Build and tag the image:
+
+```bash
+docker build --platform=linux/amd64 -t junaidajdocker/junaid-confluentinc-kafka-connect-jdbc-10.8.0:latest .
+```
+
+Push the image to a Docker registry:
+
+```bash
+docker push junaidajdocker/junaid-confluentinc-kafka-connect-jdbc-10.8.0:latest
+```
+
+## Step 6: Deploy Kafka Connect
+
+Create a `kafka-connect.yaml` file:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: kafka-connect
+  namespace: kafka
+  annotations:
+    strimzi.io/use-connector-resources: "true"
+spec:
+  bootstrapServers: my-kafka-cluster-kafka-bootstrap:9092
+  version: 3.7.0
+  replicas: 1
+  image: junaidajdocker/junaid-confluentinc-kafka-connect-jdbc-10.8.0:latest
+  config:
+    group.id: my-connect-cluster
+    offset.storage.topic: my-connect-cluster-offsets
+    config.storage.topic: my-connect-cluster-configs
+    status.storage.topic: my-connect-cluster-status
+    key.converter: org.apache.kafka.connect.storage.StringConverter
+    value.converter: org.apache.kafka.connect.storage.StringConverter
+    key.converter.schemas.enable: true
+    value.converter.schemas.enable: true
+    config.storage.replication.factor: 3
+    offset.storage.replication.factor: 3
+    status.storage.replication.factor: 3
+    plugin.path: /opt/kafka/plugins
+```
+
+Apply the configuration:
+
+```bash
+kubectl apply -f kafka-connect.yaml
+```
+
+## Step 7: Deploy Kafka Connector
+
+Create a `kafka-connector.yaml` file:
+
+```yaml
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: postgres-source-connector-1
+  namespace: kafka
+  labels:
+    strimzi.io/cluster: kafka-connect
+spec:
+  class: io.confluent.connect.jdbc.JdbcSourceConnector
+  tasksMax: 3
+  config:
+    connector.class: io.confluent.connect.jdbc.JdbcSourceConnector
+    tasks.max: "3"
+    topics: "users"
+    connection.url: "jdbc:postgresql://postgres:5432/exampledb"
+    connection.user: "postgres"
+    connection.password: "examplepassword"
+    table.whitelist: "users"
+    mode: "incrementing"
+    incrementing.column.name: "id"
+    poll.interval.ms: "5000"
+    timestamp.column.name: "last_modified"
+    numeric.mapping: "best_fit"
+    value.converter: org.apache.kafka.connect.json.JsonConverter
+    value.converter.schemas.enable: "false"
+```
+
+Apply the configuration:
+
+```bash
+kubectl apply -f kafka-connector.yaml
+```
+
+## Conclusion
+
+You have successfully set up a Kafka cluster using Strimzi Operator, integrated with MetalLB for load balancing, and deployed a custom Kafka Connect image. You also created a Kafka Connector for sourcing data from PostgreSQL.
+```
+
+Copy this content into a `README.md` file and follow the steps for seamless deployment and setup.
