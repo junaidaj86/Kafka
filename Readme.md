@@ -26,7 +26,7 @@ nodes:
 Run the command to create the cluster:
 
 ```bash
-kind create cluster --config kind-cluster-config.yaml
+kind create cluster --config kind-cluster.yaml
 ```
 
 ## Step 2: Install MetalLB

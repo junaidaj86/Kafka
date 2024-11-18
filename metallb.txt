@@ -9,7 +9,7 @@ metadata:
   namespace: default
 spec:
   addresses:
-  - 172.18.0.100-172.18.0.140
+  - 192.168.97.20-192.168.97.40
 EOF
 
 
@@ -25,3 +25,8 @@ spec:
   - demo-pool
 EOF
 
+
+
+https://github.com/chipmk/docker-mac-net-connect
+
+https://www.youtube.com/watch?v=43fn499NYXs&t=484s
