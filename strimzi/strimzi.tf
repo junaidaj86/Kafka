@@ -29,7 +29,7 @@ resource "kubernetes_manifest" "strimzi_kafka" {
     kind       = "Kafka"
     metadata = {
       name      = "my-kafka-cluster"
-      namespace = "kafka"
+      namespace = "strimzi"
      
 
     }
@@ -48,7 +48,7 @@ resource "kubernetes_manifest" "strimzi_kafka" {
             name     = "external"
             port     = 9094
             type     = "loadbalancer"
-            tls      = false
+            tls      = true
           }
         ]
         config = {
@@ -56,6 +56,11 @@ resource "kubernetes_manifest" "strimzi_kafka" {
           "transaction.state.log.replication.factor" = 3
           "transaction.state.log.min.isr"            = 2
           "log.message.format.version"               = "2.8"
+          "ssl.keystore.location" = "/Users/jja8go/broker/broker.keystore.p12"
+          "ssl.keystore.password" = "password"
+          "ssl.truststore.location" = "/Users/jja8go/broker/broker.truststore.p12"
+          "ssl.truststore.password" = "password"
+          "ssl.client.auth" = "required"
         }
         storage = {
           type = "ephemeral"
@@ -64,6 +69,10 @@ resource "kubernetes_manifest" "strimzi_kafka" {
 
       zookeeper = {
         replicas = 3
+        config = {
+          "admin.enableServer" = "true"
+          "admin.serverPort"   = "9095"
+        }
         storage = {
           type = "ephemeral"
         }

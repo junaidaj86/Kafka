@@ -273,3 +273,8 @@ kubectl apply -f kafka-connector.yaml
 You have successfully set up a Kafka cluster using Strimzi Operator, integrated with MetalLB for load balancing, and deployed a custom Kafka Connect image. You also created a Kafka Connector for sourcing data from PostgreSQL.
 ```
 
+# Create a secret for the broker certificate
+kubectl create secret generic broker-secret --from-file=/Users/jja8go/certs/broker/broker.crt
+
+# Create a secret for the CA certificate
+kubectl create secret generic ca-secret --from-file=/Users/jja8go/certs/ca/certs/ca.crt
